@@ -14,3 +14,4 @@
 - [ ] Add deterministic tests for local queue and conflict-resolution logic
 - [x] Generate a custom field-service application icon and update mobile branding configuration
 - [x] Validate type checks and core offline/synchronization flows
+- [ ] Publish the completed FieldOps project to a private GitHub repository
