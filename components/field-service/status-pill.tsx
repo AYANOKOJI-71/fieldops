@@ -1,0 +1,8 @@
+import { StyleSheet, Text, View } from "react-native";
+import type { SyncState, WorkOrderPriority, WorkOrderStatus } from "@/lib/field-service/types";
+
+type LabelTone = "navy" | "teal" | "green" | "amber" | "red" | "slate";
+function toneForStatus(status: WorkOrderStatus | SyncState | WorkOrderPriority): LabelTone { if (status === "completed" || status === "synced") return "green"; if (status === "in_progress" || status === "pending") return "teal"; if (status === "urgent") return "amber"; if (status === "conflict" || status === "needs_review" || status === "failed") return "red"; if (status === "scheduled") return "navy"; return "slate"; }
+function formatLabel(value: string) { return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()); }
+export function StatusPill({ value }: { value: WorkOrderStatus | SyncState | WorkOrderPriority }) { const tone = toneForStatus(value); return <View style={[styles.pill, styles[`pill_${tone}`]]}><Text style={[styles.label, styles[`label_${tone}`]]}>{formatLabel(value)}</Text></View>; }
+const styles = StyleSheet.create({ pill: { alignSelf: "flex-start", borderRadius: 999, paddingHorizontal: 9, paddingVertical: 4 }, label: { fontSize: 11, fontWeight: "700", letterSpacing: 0.2 }, pill_navy: { backgroundColor: "#E5EDF3" }, label_navy: { color: "#123047" }, pill_teal: { backgroundColor: "#DDF3F4" }, label_teal: { color: "#087E8B" }, pill_green: { backgroundColor: "#E5F5EB" }, label_green: { color: "#197A42" }, pill_amber: { backgroundColor: "#FFF2D8" }, label_amber: { color: "#A75600" }, pill_red: { backgroundColor: "#FDE8E7" }, label_red: { color: "#B42318" }, pill_slate: { backgroundColor: "#EEF2F6" }, label_slate: { color: "#475569" } });

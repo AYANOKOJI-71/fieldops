@@ -1,48 +1,15 @@
-import { ScrollView, Text, View, TouchableOpacity } from "react-native";
-
+import { useMemo } from "react";
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { WorkOrderRow } from "@/components/field-service/work-order-row";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { ScreenContainer } from "@/components/screen-container";
+import { useFieldService } from "@/lib/field-service/field-service-provider";
 
-/**
- * Home Screen - NativeWind Example
- *
- * This template uses NativeWind (Tailwind CSS for React Native).
- * You can use familiar Tailwind classes directly in className props.
- *
- * Key patterns:
- * - Use `className` instead of `style` for most styling
- * - Theme colors: use tokens directly (bg-background, text-foreground, bg-primary, etc.); no dark: prefix needed
- * - Responsive: standard Tailwind breakpoints work on web
- * - Custom colors defined in tailwind.config.js
- */
-export default function HomeScreen() {
-  return (
-    <ScreenContainer className="p-6">
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View className="flex-1 gap-8">
-          {/* Hero Section */}
-          <View className="items-center gap-2">
-            <Text className="text-4xl font-bold text-foreground">Welcome</Text>
-            <Text className="text-base text-muted text-center">
-              Edit app/(tabs)/index.tsx to get started
-            </Text>
-          </View>
-
-          {/* Example Card */}
-          <View className="w-full max-w-sm self-center bg-surface rounded-2xl p-6 shadow-sm border border-border">
-            <Text className="text-lg font-semibold text-foreground mb-2">NativeWind Ready</Text>
-            <Text className="text-sm text-muted leading-relaxed">
-              Use Tailwind CSS classes directly in your React Native components.
-            </Text>
-          </View>
-
-          {/* Example Button */}
-          <View className="items-center">
-            <TouchableOpacity className="bg-primary px-6 py-3 rounded-full active:opacity-80">
-              <Text className="text-background font-semibold">Get Started</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </ScrollView>
-    </ScreenContainer>
-  );
+function formatDay() { return new Intl.DateTimeFormat(undefined, { weekday: "long", month: "long", day: "numeric" }).format(new Date()); }
+export default function TodayScreen() {
+  const router = useRouter(); const { ready, workOrders, syncSummary, lastRefreshAt } = useFieldService(); const todayOrders = useMemo(() => workOrders.filter((item) => item.status !== "completed"), [workOrders]); const completedCount = workOrders.filter((item) => item.status === "completed").length;
+  if (!ready) return <ScreenContainer className="items-center justify-center"><ActivityIndicator size="large" color="#087E8B" /></ScreenContainer>;
+  return <ScreenContainer containerClassName="bg-[#F5F8FA]" className="bg-[#F5F8FA]"><FlatList data={todayOrders} keyExtractor={(item) => item.id} renderItem={({ item }) => <WorkOrderRow item={item} onPress={() => router.push({ pathname: "/work-orders/[id]", params: { id: item.id } })} />} contentContainerStyle={styles.listContent} ListHeaderComponent={<View><View style={styles.header}><View><Text style={styles.eyebrow}>FIELD OPERATIONS</Text><Text style={styles.title}>Today</Text><Text style={styles.date}>{formatDay()}</Text></View><Pressable onPress={() => router.push("/profile")} style={({ pressed }) => [styles.profileButton, pressed && styles.pressed]}><IconSymbol name="person.crop.circle.fill" size={32} color="#123047" /></Pressable></View><View style={styles.syncBanner}><View style={styles.syncIcon}><IconSymbol name="wifi.slash" size={17} color="#087E8B" /></View><View style={styles.syncCopy}><Text style={styles.syncTitle}>Offline-ready workspace</Text><Text style={styles.syncText}>{syncSummary.pending > 0 ? `${syncSummary.pending} field update${syncSummary.pending === 1 ? "" : "s"} queued securely on this device.` : "Your assigned work is available on this device."}</Text></View><Pressable onPress={() => router.push("/sync")} style={({ pressed }) => [styles.bannerAction, pressed && styles.pressed]}><Text style={styles.bannerActionText}>View</Text></Pressable></View><View style={styles.metricRow}><View style={styles.metricCard}><Text style={styles.metricNumber}>{todayOrders.length}</Text><Text style={styles.metricLabel}>Open visits</Text></View><View style={styles.metricDivider} /><View style={styles.metricCard}><Text style={styles.metricNumber}>{completedCount}</Text><Text style={styles.metricLabel}>Completed</Text></View><View style={styles.metricDivider} /><View style={styles.metricCard}><Text style={styles.metricNumber}>{syncSummary.pending}</Text><Text style={styles.metricLabel}>To sync</Text></View></View><View style={styles.sectionRow}><Text style={styles.sectionTitle}>Today’s route</Text><Text style={styles.localLabel}>{lastRefreshAt ? "LOCAL DATA" : "LOADING"}</Text></View></View>} ListEmptyComponent={<View style={styles.empty}><Text style={styles.emptyTitle}>You’re clear for today</Text><Text style={styles.emptyText}>Any newly assigned work will appear here after your next synchronization.</Text></View>} /></ScreenContainer>;
 }
+const styles = StyleSheet.create({ listContent: { paddingBottom: 30 }, header: { paddingHorizontal: 20, paddingTop: 14, paddingBottom: 18, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }, eyebrow: { color: "#087E8B", fontSize: 11, fontWeight: "800", letterSpacing: 1.2 }, title: { color: "#123047", fontSize: 34, fontWeight: "800", marginTop: 3, lineHeight: 40 }, date: { color: "#64748B", fontSize: 15, marginTop: 1 }, profileButton: { borderRadius: 20, padding: 2 }, pressed: { opacity: 0.64 }, syncBanner: { marginHorizontal: 20, padding: 14, borderRadius: 16, backgroundColor: "#E9F7F7", flexDirection: "row", alignItems: "center", marginBottom: 14 }, syncIcon: { width: 34, height: 34, borderRadius: 17, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center", marginRight: 10 }, syncCopy: { flex: 1 }, syncTitle: { color: "#123047", fontSize: 14, fontWeight: "800" }, syncText: { color: "#47606B", fontSize: 12, lineHeight: 17, marginTop: 2 }, bannerAction: { paddingLeft: 10, paddingVertical: 8 }, bannerActionText: { color: "#087E8B", fontSize: 13, fontWeight: "800" }, metricRow: { marginHorizontal: 20, backgroundColor: "#123047", borderRadius: 16, paddingVertical: 14, flexDirection: "row", alignItems: "center", marginBottom: 24 }, metricCard: { flex: 1, alignItems: "center" }, metricNumber: { color: "#FFFFFF", fontSize: 23, fontWeight: "800" }, metricLabel: { color: "#B8CDD9", fontSize: 11, fontWeight: "700", marginTop: 2 }, metricDivider: { width: 1, height: 34, backgroundColor: "#31526A" }, sectionRow: { paddingHorizontal: 20, flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }, sectionTitle: { color: "#123047", fontSize: 19, fontWeight: "800" }, localLabel: { color: "#64748B", fontSize: 10, fontWeight: "800", letterSpacing: 0.8 }, empty: { marginHorizontal: 20, borderRadius: 16, padding: 20, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E6EDF2" }, emptyTitle: { color: "#123047", fontSize: 17, fontWeight: "800" }, emptyText: { color: "#64748B", fontSize: 14, lineHeight: 20, marginTop: 5 } });
