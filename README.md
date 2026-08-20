@@ -95,7 +95,6 @@ pnpm ios
 
 FieldOps treats synchronization as a user-visible product concern rather than an implementation detail. Mutations have stable client IDs so retrying a request does not apply the same change twice. Records carry versions so the server can reject stale updates instead of silently overwriting newer work. The client exposes pending, failed, and conflict states so a technician can understand what still needs attention.
 
-The project is a portfolio reference implementation and should be connected to production identity, database, and observability controls only after the deployment environment has been configured and reviewed.
 
 ## Author
 
